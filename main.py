@@ -1,49 +1,123 @@
-import  pygame
+import random
 
-class BaseSprite:
-    def __init__(self, x, y, texture,speed, w, h):
-        self.texture = pygame.image.load(texture)
-        self.texture = pygame.transform.scale(self.texture, [w, h])
-        self.hitbox = self.texture.get_rect()
+import pygame
+
+
+class Bullet:
+    def __init__(self, speed, x, y, width, height, skin):
+        self.speed = speed
+        self.skin = pygame.image.load(skin)
+        self.skin = pygame.transform.scale(self.skin, [width, height])
+        self.hitbox = self.skin.get_rect()
         self.hitbox.x = x
         self.hitbox.y = y
-        self.speed = speed
+        self.bullets = []
 
     def draw(self, window):
-        window.blit(self.texture, self.hitbox)
+        window.blit(self.skin, self.hitbox)
+    def update(self):
+        self.hitbox.y -= self.speed
 
-class Rocket(BaseSprite):
+
+class Player:
+    def __init__(self, speed,
+                 x, y,
+                 width, height,
+                 skin):
+        self.speed = speed
+        self.skin = pygame.image.load(skin)
+        self.skin = pygame.transform.scale(self.skin, [width, height])
+        self.hitbox = self.skin.get_rect()
+        self.hitbox.x = x
+        self.hitbox.y = y
+        self.bullets = []
+    def draw(self, window):
+        window.blit(self.skin, self.hitbox)
+        for bullet in self.bullets:
+            bullet.draw(window)
+
+
+
     def update(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
             self.hitbox.x += self.speed
         if keys[pygame.K_a]:
             self.hitbox.x -= self.speed
+        if keys[pygame.K_SPACE]:
+            self.bullets.append(Bullet(10, self.hitbox.x+10, self.hitbox.y, 10, 20, "bullet.png"))
+        for bullet in self.bullets:
+            bullet.update()
 
 
+class Enemy:
+    def __init__(self, speed,
+                 x, y,
+                 width, height,
+                 skin):
+        self.speed = speed
+        self.skin = pygame.image.load(skin)
+        self.skin = pygame.transform.scale(self.skin, [width, height])
+        self.hitbox = self.skin.get_rect()
+        self.hitbox.x = x
+        self.hitbox.y = y
 
-galaxy_img = pygame.image.load("galaxy.jpg")
-galaxy_img = pygame.transform.scale(galaxy_img, [700, 500])
+    def draw(self, window):
+        window.blit(self.skin, self.hitbox)
 
+
+    def update(self):
+        self.hitbox.y += self.speed
+        if self.hitbox.y > 500:
+            self.hitbox.y = -100
+            self.hitbox.x = random.randint(0, 600)
+
+pygame.init()
 window = pygame.display.set_mode([700, 500])
+clock = pygame.time.Clock()
 
-rocket = Rocket(250, 380, "rocket.png", 5, 80, 120)
+background_img = pygame.image.load("galaxy.jpg")
+background_img = pygame.transform.scale(background_img, [700, 500])
 game = True
+
+hero = Player(10, 500, 400, 50, 50, "rocket.png")
+
+enemies = []
+y =  50
+for i in range(10):
+    enemies.append(Enemy(1, random.randint(0, 600), y, 50, 50, "ufo.png"))
+    y -= 100
+
 while game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            print(pygame.mouse.get_pos())
-        rocket.update()
+        if event.type == pygame.MOUSEBUTTONDOWN:  #
+            print(pygame.mouse.get_pos())  #
+
+    for bullet in hero.bullets[:]:
+        for enemy in enemies:
+            if bullet.hitbox.colliderect(enemy.hitbox):
+                hero.bullets.remove(bullet)
+                enemy.hitbox.y = -100
+                enemy. hitbox.x = random.randint(0, 600)
+                break
 
 
-    window.fill([104, 1, 14])
+    hero.update()
+    window.fill([123, 123,123 ])
+    window.blit(background_img, [0,0])
+
+    hero.draw(window)
+
+    for enemy in enemies:
+        enemy.update()
+        enemy.draw(window)
 
 
-    window.blit(galaxy_img, [0, 0])
-    rocket.draw(window)
     pygame.display.flip()
+
+    clock.tick(60)
 
 
