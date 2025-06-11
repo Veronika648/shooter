@@ -2,7 +2,7 @@ import random
 
 import pygame
 
-
+desteroyed_enemy = 0
 class Bullet:
     def __init__(self, speed, x, y, width, height, skin):
         self.speed = speed
@@ -72,52 +72,67 @@ class Enemy:
             self.hitbox.y = -100
             self.hitbox.x = random.randint(0, 600)
 
-pygame.init()
-window = pygame.display.set_mode([700, 500])
-clock = pygame.time.Clock()
 
-background_img = pygame.image.load("galaxy.jpg")
-background_img = pygame.transform.scale(background_img, [700, 500])
-game = True
+def start_game():
+    global missed_enemy, desteroyed_enemy
 
-hero = Player(10, 500, 400, 50, 50, "rocket.png")
 
-enemies = []
-y =  50
-for i in range(10):
-    enemies.append(Enemy(1, random.randint(0, 600), y, 50, 50, "ufo.png"))
-    y -= 100
+    pygame.init()
+    window = pygame.display.set_mode([700, 500])
+    clock = pygame.time.Clock()
 
-while game:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:  #
-            print(pygame.mouse.get_pos())  #
+    background_img = pygame.image.load("galaxy.jpg")
+    background_img = pygame.transform.scale(background_img, [700, 500])
+    game = True
 
-    for bullet in hero.bullets[:]:
+    hero = Player(10, 500, 400, 60, 80, "rocket.png")
+
+    enemies = []
+    y =  50
+    for i in range(10):
+        enemies.append(Enemy(1, random.randint(0, 600), y, 50, 50, "ufo.png"))
+        y -= 100
+
+        desteroyed_text = pygame.font.Font(None, 20).render("Знищено:"+ str(desteroyed_enemy), True, [250, 250, 250])
+
+    while game:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:  #
+                print(pygame.mouse.get_pos())  #
+
+
+        desteroyed_text = pygame.font.Font(None, 20).render("Знищено:"+ str(desteroyed_enemy), True, [250, 250, 250])
+
+        for bullet in hero.bullets[:]:
+            for enemy in enemies:
+                if bullet.hitbox.colliderect(enemy.hitbox):
+                    hero.bullets.remove(bullet)
+                    enemy.hitbox.y = -100
+                    enemy. hitbox.x = random.randint(0, 600)
+                    desteroyed_enemy += 1
+
+
+
+                    break
+
+
+        hero.update()
+        window.fill([123, 123,123 ])
+        window.blit(background_img, [0,0])
+        window.blit(desteroyed_text, [0, 0])
+
+        hero.draw(window)
+
         for enemy in enemies:
-            if bullet.hitbox.colliderect(enemy.hitbox):
-                hero.bullets.remove(bullet)
-                enemy.hitbox.y = -100
-                enemy. hitbox.x = random.randint(0, 600)
-                break
+            enemy.update()
+            enemy.draw(window)
 
 
-    hero.update()
-    window.fill([123, 123,123 ])
-    window.blit(background_img, [0,0])
+        pygame.display.flip()
 
-    hero.draw(window)
-
-    for enemy in enemies:
-        enemy.update()
-        enemy.draw(window)
-
-
-    pygame.display.flip()
-
-    clock.tick(60)
+        clock.tick(60)
 
 
