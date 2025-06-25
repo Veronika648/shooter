@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import *
 from main import *
+from shop import *
 
 app = QApplication([])
 
@@ -19,7 +20,7 @@ main_line.addWidget(exit_btn)
 window.setLayout(main_line)
 
 start_btn.clicked.connect(start_game)
-shop_btn.clicked.connect(start_game)
+shop_btn.clicked.connect(shop_window)
 setting_btn.clicked.connect(start_game)
 exit_btn.clicked.connect(start_game)
 
